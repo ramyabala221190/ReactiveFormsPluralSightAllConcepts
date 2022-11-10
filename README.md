@@ -72,6 +72,8 @@ formControl
 formControlName
 formArrayName
 
+formGroupName/formArrayName/formControlName accepts string,number or null
+
 =>In Reactive, we need to construct the form model. Angular wont do it for us.
 =>Form validations are defined in the class and not in the html
 =>No 2 way data binding. This means that updating the customer data in the class will not update the form control.
@@ -188,4 +190,40 @@ and not individual form controls
       email:new FormControl("",[Validators.required,Validators.email]),
       confirmEmail:new FormControl("",[Validators.required]),
     },[emailMatcher]),
+
+How do you access a form control inside a nested form group?
+
+this.customerForm.get('emailGroup.email') -----to access the email form control inside the nested form group emailGroup
+
+----------------------------------------------------------
+Watching for changes in FormControl and FormGroup
+
+We use the valueChanges property of single FormControl or multiple controls using FormGroup
+
+this.formControl.valueChanges.subscribe(value=>{
+  console.log(value) //control value
+})
+
+this.formGroup.valueChanges.subscribe(value=>{
+  console.log(JSON.stringify(value)) //form group value
+})
+
+-------------------------------------------------------------------
+To duplicate a set of elements , you always enclose all the elements inside a form group
+For Eg:
+ addresses:new FormGroup({
+      addressType:new FormControl("home"),
+      street1:new FormControl(""),
+      street2:new FormControl(""),
+      city:new FormControl(""),
+      state:new FormControl(""),
+      zip:new FormControl("")
+    })
+
+If I want to add multiple addresses, each time I click on "Add new address", the above set of form controls must
+duplicate in the UI.
+
+FormArrays dont have names.
+
+this.myArray=new FormArray([]);
 
