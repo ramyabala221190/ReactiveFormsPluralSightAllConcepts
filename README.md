@@ -226,4 +226,10 @@ duplicate in the UI.
 FormArrays dont have names.
 
 this.myArray=new FormArray([]);
+--------------------------------------------------------------------
+Faking a backend server:
 
+1. Directly return hard coded data
+2. From a json file
+3. Write our own code using MockBackend
+4. Use Angular In Memory Web Api

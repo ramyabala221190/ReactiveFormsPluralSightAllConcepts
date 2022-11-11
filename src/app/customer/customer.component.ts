@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators,AbstractControl, ValidatorFn, FormArray } from '@angular/forms';
+import { NumberValidators } from '../shared/number.validator';
 
-function checkRange(min:number,max:number):ValidatorFn{
-return (c:AbstractControl):{[key:string]:boolean} |null =>{
-  //the validation is for optional fields.
-  if(c.value !==null && (isNaN(c.value) || c.value < min || c.value > max)){
-    return {'range':true}; //range is the name of the validation error just like required, maxlength etc
-    //which you can use in the template for displaying/hiding error message
-  }
-  return null;
-}
-}
+// function checkRange(min:number,max:number):ValidatorFn{
+// return (c:AbstractControl):{[key:string]:boolean} |null =>{
+//   //the validation is for optional fields.
+//   if(c.value !==null && (isNaN(c.value) || c.value < min || c.value > max)){
+//     return {'range':true}; //range is the name of the validation error just like required, maxlength etc
+//     //which you can use in the template for displaying/hiding error message
+//   }
+//   return null;
+// }
+// }
 
 function emailMatcher(c:AbstractControl):{[key:string]:boolean}|null{
   let email=c.get('email');
@@ -65,7 +66,7 @@ export class CustomerComponent implements OnInit {
     sendCatalog:new FormControl(true),
     phone:new FormControl(null,[Validators.required]),
     notification:new FormControl("email"),
-    rating:new FormControl(null,[checkRange(1,5)]), //set the default value of numeric control to null
+    rating:new FormControl(null,[NumberValidators.checkRange(1,5)]), //set the default value of numeric control to null
     //rating field is not mandatory. Only if its filled, we are validating for the correct value
     addresses:new FormArray([this.createAddress()])
   });
