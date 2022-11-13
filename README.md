@@ -85,8 +85,63 @@ The form model will defined in the class.
 Square brackets indicate we are binding to a property in the class.
 
 formControlName="firstName" indicates that we are binding to a string
+
+Form Builder
+
+Creates a form model from a config
+Reduces the boiler plate code required to create the root form group
+
+Using FormBuilder instead of FormGroup/FormControl
+
+1. Add FormBuilder in the constructor: private fb:FormBuilder
+
+2. Instead of new FormGroup({}) we write this.fb.group({})
+
+3. Instead of firstName: new FormControl("", [Validators.required, Validators.minLength(3)]), we write:
+firstName: ["", [Validators.required, Validators.minLength(3)]]
+
+
+Example using FormBuilder:
+
+customerForm=this.fb.group({
+  firstName: ["", [Validators.required, Validators.minLength(3)]],
+  lastName: ["", [Validators.required, Validators.maxLength(50)]],
+  // lastName:new FormControl({value:"",disabled:true},[Validators.required,Validators.maxLength(50)]),
+  //email:new FormControl("",[Validators.required,Validators.email]),
+  emailGroup: this.fb.group({
+    email: ["", [Validators.required, Validators.email]],
+    confirmEmail: ["", [Validators.required]],
+  }, [emailMatcher]),
+  sendCatalog: [true],
+  phone: [null, [Validators.required]],
+  notification:["email"],
+  rating: [null, [NumberValidators.checkRange(1, 5)]], //set the default value of numeric control to null
+  //rating field is not mandatory. Only if its filled, we are validating for the correct value
+  addresses: this.fb.array([this.createAddress(this.defaultAddress)])
+})
+
+Example using FormControl/FormGroup:
+
+ customerForm: FormGroup = new FormGroup({
+  firstName: new FormControl("", [Validators.required, Validators.minLength(3)]),
+  lastName: new FormControl("", [Validators.required, Validators.maxLength(50)]),
+       // lastName:new FormControl({value:"",disabled:true},[Validators.required,Validators.maxLength(50)]),
+       //email:new FormControl("",[Validators.required,Validators.email]),
+  emailGroup: new FormGroup({
+       email: new FormControl("", [Validators.required, Validators.email]),
+       confirmEmail: new FormControl("", [Validators.required]),
+     }, [emailMatcher]),
+     sendCatalog: new FormControl(true),
+     phone: new FormControl(null, [Validators.required]),
+     notification: new FormControl("email"),
+     rating: new FormControl(null, [NumberValidators.checkRange(1, 5)]), //set the default value of numeric control to null
+     //rating field is not mandatory. Only if its filled, we are validating for the correct value
+     addresses: new FormArray([this.createAddress(this.defaultAddress)])
+   });
 ---------------------------------------------------------------------------------
-Ways of Accessing form model properties:
+Ways of Accessing form model properties: This remains same irrespective of whether you use FormBuilder or not.
+The basic structure of the form model does not change. The FormModel still contains the same FormGroup/FormControl/FormArray.
+In FormBuilder syntax will make it easier for you to build the form model.
 
 1. customerForm.controls.firstName.valid
 2. customerForm.get('firstName').valid
@@ -106,14 +161,12 @@ We use setValue() when we want to set the value of all form controls in the form
 We use patchValue() when we want to set the value of only a subset of all controls in the form group ie
 only a few and not all form controls
 ----------------------------------------------------------------------------------
-Form Builder
 
-Creates a form model from a config
-Reduces the boiler plate code required to create the root form group
-----------------------------------------------------------------------------------
 Disabling a form control
 
 lastName:new FormControl({value:"",disabled:true},[Validators.required,Validators.maxLength(50)])
+OR
+lastName:[{value:",disabled:true},[Validators.required,Validators.maxLength(50)]]
 When you disable the form control, the control doesnt appear in the form's value.
 
 ---------------------------------------------------------------------
@@ -179,6 +232,13 @@ I define both these fields as form control under a new nested form group.
       confirmEmail:new FormControl("",[Validators.required]),
     })
 
+  OR
+
+  emailGroup:this.fb.group({
+     email:["",[Validators.required,Validators.email]],
+      confirmEmail:["",[Validators.required]],
+  })
+
 Also in the html, I nest both the form controls inside a <div formGroupName="emailGroup"></div>
 
 The advantage of adding the controls inside a nested form group is that we can create a custom validator and
@@ -190,6 +250,13 @@ and not individual form controls
       email:new FormControl("",[Validators.required,Validators.email]),
       confirmEmail:new FormControl("",[Validators.required]),
     },[emailMatcher]),
+
+     OR
+
+  emailGroup:this.fb.group({
+     email:["",[Validators.required,Validators.email]],
+      confirmEmail:["",[Validators.required]],
+  },[emailMatcher])
 
 How do you access a form control inside a nested form group?
 
@@ -209,23 +276,35 @@ this.formGroup.valueChanges.subscribe(value=>{
 })
 
 -------------------------------------------------------------------
-To duplicate a set of elements , you always enclose all the elements inside a form group
-For Eg:
- addresses:new FormGroup({
-      addressType:new FormControl("home"),
-      street1:new FormControl(""),
-      street2:new FormControl(""),
-      city:new FormControl(""),
-      state:new FormControl(""),
-      zip:new FormControl("")
-    })
+To duplicate a set of elements , you always enclose all the elements to be duplicated inside a form group
 
-If I want to add multiple addresses, each time I click on "Add new address", the above set of form controls must
+If I want to add multiple addresses, each time I click on "Add new address", the set of form controls inside the form group must
 duplicate in the UI.
 
-FormArrays dont have names.
+defaultAddress={
+  "addressType": "home",
+  "street1": "",
+  "street2": "",
+  "state": "",
+  "city": "",
+  "zip": null
+}
 
-this.myArray=new FormArray([]);
+createAddress(address:any) {
+    return this.fb.group({
+      addressType: [address.addressType],
+      street1: [address.street1],
+      street2: [address.street2],
+      city: [address.city],
+      state: [address.state],
+      zip: [address.zip]
+    })
+  }
+
+  addNewAddress() {
+    this.addressList.push(this.createAddress(this.defaultAddress));
+  }
+
 --------------------------------------------------------------------
 Faking a backend server:
 
@@ -233,3 +312,42 @@ Faking a backend server:
 2. From a json file
 3. Write our own code using MockBackend
 4. Use Angular In Memory Web Api
+
+---------------------------------------------------------------------------------------
+Populating data inside FormArray:
+
+First map each address object into a FormGroup and each property inside the object as FormControl inside the FormGroup.
+We have done this using createAddress().
+Finally pass the array of FormGroups i.e addressList to this.fb.array().
+
+ let addressList=this.customer.addresses.map((addr:any)=>this.createAddress(addr));
+this.customerForm.setControl('addresses',this.fb.array(addressList));
+
+---------------------------------------------------------------------------------------
+Deleting a form group from a form array
+
+deleteAddr(groupIndex:number){
+    this.addressList.removeAt(groupIndex);
+  }
+
+All we need to do is pass the group index as argument.
+-----------------------------------------------------------------------------
+Check how dropdowns are designed
+1. The first option is empty,selected,disabled and hidden
+
+ <select class="form-control"
+                      formControlName="state"
+                      name="state">
+                <option value=""
+                        disabled
+                        selected
+                        hidden>Select a State...</option>
+                <option value="AL">Alabama</option>
+                <option value="AK">Alaska</option>
+                <option value="AZ">Arizona</option>
+                <option value="AR">Arkansas</option>
+                <option value="CA">California</option>
+                <option value="CO">Colorado</option>
+                <option value="WI">Wisconsin</option>
+                <option value="WY">Wyoming</option>
+              </select>

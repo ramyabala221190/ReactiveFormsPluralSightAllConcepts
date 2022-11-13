@@ -144,6 +144,7 @@
         </div>
 
       <div *ngIf="customerForm.get('sendCatalog')?.value">
+          <button class="btn btn-danger" (click)="deleteAllAddr()">Delete All Addresses</button>
         <div formArrayName="addresses">
         <div *ngFor="let address of addressList.controls;let i=index" formGroupName="{{i}}">
               <div class="form-group row mb-2">
@@ -178,6 +179,9 @@
                 </label>
               </div>
                </div>
+               <label class="col-md-2">
+                <button class="btn btn-danger" (click)="deleteAddr(i)">Delete Address</button>
+               </label>
              </div>
 
                <div class="form-group row mb-2">
@@ -256,6 +260,10 @@
             <button class="btn btn-primary mr-3"
             (click)="populateTestData()"
            >Test Data</button>
+
+           <button class="btn btn-primary mr-3"
+           (click)="reset()"
+          >Reset</button>
 
            <button class="btn btn-primary mr-3"
            (click)="addNewAddress()"
